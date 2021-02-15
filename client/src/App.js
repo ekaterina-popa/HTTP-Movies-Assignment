@@ -3,7 +3,7 @@ import { Route } from "react-router-dom";
 import SavedList from "./Movies/SavedList";
 import MovieList from "./Movies/MovieList";
 import Movie from "./Movies/Movie";
-import UpdateMovie from "./Movies/UpdateMovie";
+import MovieForm from "./Movies/MovieForm";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
@@ -32,15 +32,13 @@ const App = () => {
   };
 
   const onEditSubmit = () => {
+    const id = params.id;
     axios
-      .get(`http://localhost:5000/api/movies/${params.id}`)
-      .then((res) => setMovie(res.data))
-      .catch((err) => console.log(err.response));
-
-    axios
-      .put(`http://localhost:5000/api/movies/${params.id}`, movie)
+      .put(`http://localhost:5000/api/movies/${id}`, movie)
       .then((res) => {
-        console.log("res.data", res.data);
+        console.log("edited movie", res.data);
+        setMovie(res.data);
+        setMovieList([...movieList, res.data]);
       })
       .catch(console.error);
   };
@@ -50,15 +48,14 @@ const App = () => {
       .post("http://localhost:5000/api/movies")
       .then((res) => {
         console.log("added movie", res.data);
+        setMovieList(res.data);
       })
       .catch(console.error);
   };
 
   useEffect(() => {
     getMovieList();
-    onEditSubmit();
-    onAddSubmit();
-  });
+  }, []);
 
   return (
     <>
@@ -76,16 +73,24 @@ const App = () => {
       <Route
         exact
         path="/update-movie/:id"
-        render={(props) => <UpdateMovie {...props} onSubmit={onEditSubmit} />}
+        render={(props) => (
+          <MovieForm
+            {...props}
+            onSubmit={onEditSubmit}
+            movie={movie}
+            setMovie={setMovie}
+          />
+        )}
       />
       <Route
         exact
         path="/add-movie"
         render={(props) => (
-          <UpdateMovie
+          <MovieForm
             {...props}
             onSubmit={onAddSubmit}
-            movie={initialMovieState}
+            movie={movie}
+            setMovie={setMovie}
           />
         )}
       />
